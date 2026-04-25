@@ -14,6 +14,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     stopButton: document.getElementById("stopButton"),
     playButton: document.getElementById("playButton"),
     pauseButton: document.getElementById("pauseButton"),
+    readPageButton: document.getElementById("readPageButton"),
+    downloadProgress: document.getElementById("downloadProgress"),
+    downloadProgressMessage: document.getElementById("downloadProgressMessage"),
+    downloadProgressBar: document.getElementById("downloadProgressBar"),
     tabButtons: document.querySelectorAll(".tab-button"),
     tabPanels: document.querySelectorAll(".tab-panel")
   };
@@ -30,6 +34,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Stop playback
   elements.stopButton.addEventListener("click", handleStopPlayback);
 
+  // Read current page in Firefox Reader View
+  elements.readPageButton.addEventListener("click", async () => {
+    await browser.runtime.sendMessage({ action: "readCurrentPage" });
+    await updateTransportState();
+  });
+
   async function updateTransportState() {
     try {
       const { playbackState } = (await browser.runtime.sendMessage({ action: "getPlaybackState" })) || { playbackState: "idle" };
@@ -37,6 +47,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (e) {
       setTransportButtons("idle");
     }
+  }
+
+  async function updateDownloadProgressState() {
+    try {
+      const { downloadProgress } = (await browser.runtime.sendMessage({ action: "getDownloadProgress" })) || {};
+      renderDownloadProgress(downloadProgress);
+    } catch (e) {
+      renderDownloadProgress({ active: false, percent: 0, message: "" });
+    }
+  }
+
+  function renderDownloadProgress(progress) {
+    const active = progress && progress.active;
+    const percent = Math.max(0, Math.min(100, Math.round((progress && progress.percent) || 0)));
+    const message = (progress && progress.message) || "Preparing download...";
+    const indeterminate = Boolean(progress && progress.indeterminate);
+
+    elements.downloadProgress.classList.toggle("active", Boolean(active));
+    elements.downloadProgressMessage.textContent = message;
+    elements.downloadProgressBar.classList.toggle("indeterminate", indeterminate);
+    elements.downloadProgressBar.style.width = indeterminate ? "" : `${percent}%`;
   }
 
   function setTransportButtons(state) {
@@ -82,6 +113,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
+  browser.runtime.onMessage.addListener((message) => {
+    if (message.action === "downloadProgressChanged") {
+      renderDownloadProgress(message.downloadProgress);
+    }
+  });
+
   // Initial transport state
   updateTransportState();
+  updateDownloadProgressState();
 });

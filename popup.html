@@ -177,6 +177,56 @@
             .icon-button svg {
                 pointer-events: none;
             }
+
+            .download-progress {
+                display: none;
+                margin: 10px 0 12px;
+                padding: 10px;
+                background-color: #1f1f1f;
+                border: 1px solid #00bcd4;
+                border-radius: 5px;
+            }
+
+            .download-progress.active {
+                display: block;
+            }
+
+            .progress-message {
+                margin-bottom: 8px;
+                color: #e0e0e0;
+                font-size: 12px;
+            }
+
+            .progress-track {
+                width: 100%;
+                height: 8px;
+                background-color: #404040;
+                border-radius: 999px;
+                overflow: hidden;
+            }
+
+            .progress-bar {
+                width: 0%;
+                height: 100%;
+                background-color: #00bcd4;
+                transition: width 0.2s ease;
+            }
+
+            .progress-bar.indeterminate {
+                width: 35%;
+                background: linear-gradient(90deg, transparent, #00bcd4, transparent);
+                animation: progress-indeterminate 1s linear infinite;
+            }
+
+            @keyframes progress-indeterminate {
+                0% {
+                    transform: translateX(-100%);
+                }
+
+                100% {
+                    transform: translateX(300%);
+                }
+            }
         </style>
     </head>
     <body>
@@ -205,6 +255,15 @@
                         <rect x="8" y="8" width="8" height="8" fill="#ff5252" />
                     </svg>
                 </button>
+            </div>
+
+            <button id="readPageButton">Read Current Page</button>
+
+            <div id="downloadProgress" class="download-progress" aria-live="polite">
+                <div id="downloadProgressMessage" class="progress-message">Preparing download...</div>
+                <div class="progress-track">
+                    <div id="downloadProgressBar" class="progress-bar"></div>
+                </div>
             </div>
 
             <label for="volume">Volume:</label>

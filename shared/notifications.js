@@ -80,6 +80,8 @@ function getUserFriendlyError(context, error) {
       return 'Failed to generate audio. Check your settings.';
     case 'AUDIO_PLAYBACK':
       return 'Failed to play audio. Please try again.';
+    case 'READER_VIEW':
+      return errorStr;
     case 'STORAGE':
       return 'Failed to save settings. Please try again.';
     default:
